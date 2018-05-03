@@ -131,22 +131,16 @@ for(var i = 0; i < trail.divisions.length; i++){
 }
 swish.appendChild(trailSVG);
 
-var trailsCollection = trailSVG.getElementsByTagName('g');
-console.log(trailsCollection[0]);
-// for(var i = 0; i < trailsCollection.length; i++){
-//     var line = trailsCollection[i];
-//     line.setAttributeNS(null, 'stroke-dasharray', '100');
-
-//     line.setAttributeNS(null, 'stroke-dashoffset', '-10');
-// }
+// var trailsCollection = trailSVG.getElementsByTagName('g');
+// console.log(trailsCollection[0]);
 
 //animate
 var angle = 0;
 function update(){
-    for(var i = 0; i < trailsCollection.length; i++){
-        var line = trailsCollection[i];
-        line.setAttributeNS(null, 'stroke-dashoffset', angle);
-    }
+    // for(var i = 0; i < trailsCollection.length; i++){
+    //     var line = trailsCollection[i];
+    //     line.setAttributeNS(null, 'stroke-dashoffset', angle);
+    // }
 
     angle += 1;
     swish.setAttributeNS(null, 'transform', 'translate(200, 180) rotate(210)');
