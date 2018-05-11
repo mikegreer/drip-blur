@@ -15,6 +15,9 @@ var radius = 50;
 var segmentHeight = radius * 2 / trail.divisionCount;
 var color = '#49166D';
 
+var animationPosition = 0;
+var pathPosition = 0;
+
 //set up object
 for(var i = 0; i < trail.divisionCount; i++){
     var divisionY = 0 - radius + segmentHeight*i + segmentHeight/2;
@@ -41,18 +44,65 @@ for(var j = 0; j < trail.divisionCount; j++){
     }
 };
 
+//move to animation settings object
+//receives path and duration, calculates following
+var pathLength = 700;
+var animationLength = 1500;
+var animationStartTime = Date.now();
+
+var animate = document.createElementNS(svgns, "animateMotion");
+animate.setAttributeNS(null, "rotate", "auto");
+animate.setAttributeNS(null, "dur", animationLength/1000);
+animate.setAttributeNS(null, "ease", "out");
+animate.setAttributeNS(null, "repeatCount", "indefinite"); 
+// animate.setAttributeNS(null, "fill","freeze"); //keeps end properties after animaiton complete
+
+//sin wave type curve
+//animate.setAttributeNS(null, "path", "M120 260 C 360 120, 460 120, 580 260 S 800 400, 920 260");
+
+//straight line
+animate.setAttributeNS(null, "path", "M220 260 920 260");
+
+
 //Draw SVGs
 //group element for shape and blur lines
 var swish = document.createElementNS(svgns, 'g');
-swish.setAttributeNS(null, 'transform', 'translate(100, 100) rotate(50)');
-swish.setAttributeNS(null, 'width', 1000);
+swish.setAttributeNS(null, 'width', "auto");
 container.appendChild(swish);
+// swish.setAttributeNS(null, 'transform', 'translate(100, 100) rotate(50)');
 
 //draw circle
 var circle = document.createElementNS(svgns, 'circle');
 circle.setAttributeNS(null, 'r', radius);
-circle.setAttributeNS(null, 'style', 'fill: '+color+'; stroke: none; stroke-width: 1px;' );
+circle.setAttributeNS(null, 'id', 'ball');
+circle.setAttributeNS(null, 'style', 'fill: '+color+';' );
 swish.appendChild(circle);
+
+//example property animation
+// var animate = document.createElementNS(svgns, "animate");
+// animate.setAttributeNS(null, "attributeName","x");
+// animate.setAttributeNS(null, "from","0");
+// animate.setAttributeNS(null, "to", radius);
+// animate.setAttributeNS(null, "dur", "5");
+// animate.setAttributeNS(null, "repeatCount","indefinite"); 
+// // animate.setAttributeNS("http://www.w3.org/1999/xlink", "xlink:href","#ball"); 
+// circle.appendChild(animate);
+
+//example transform animation
+// var animate = document.createElementNS(svgns, "animateTransform");
+// animate.setAttributeNS(null, "attributeName","transform");
+// animate.setAttributeNS(null, "from","0 60 60");
+// animate.setAttributeNS(null, "to", "360 100 60");
+// animate.setAttributeNS(null, "type", "rotate");
+// animate.setAttributeNS(null, "dur", "5");
+// animate.setAttributeNS(null, "repeatCount","indefinite"); 
+// swish.appendChild(animate);
+
+//example path animation
+
+
+swish.appendChild(animate);
+
 
 //Custom cap shapes for svg line added to defs
 //create inverse end cap
@@ -90,6 +140,10 @@ roundPath.setAttributeNS(null, 'd', 'M 0.5 0 A 0.25 0.25 0 0 0 0.5 1 z');
 shadowRound.appendChild(roundPath);
 defs.appendChild(shadowRound);
 
+function constrain(min, max, number){
+    return Math.min(Math.max(parseInt(number), min), max);
+}
+
 //group for blur lines
 var trailSVG = document.createElementNS(svgns, 'g');
 for(var i = 0; i < trail.divisions.length; i++){
@@ -102,17 +156,45 @@ for(var i = 0; i < trail.divisions.length; i++){
     svgLine.setAttributeNS(null, 'y1', line.y);
     svgLine.setAttributeNS(null, 'y2', line.y);
     svgLine.setAttributeNS(null, 'x1', '0');
-    svgLine.setAttributeNS(null, 'x2', line.baseLength);
-    svgLine.setAttributeNS(null, 'stroke-dasharray', line.baseLength);
+    svgLine.setAttributeNS(null, 'x2', -line.baseLength);
+    // svgLine.setAttributeNS(null, 'stroke-dasharray', line.baseLength);
     lineContainer.appendChild(svgLine);
+
+    //desired animation
+    //Every frame, take current distance travelled
+    //Set path length to distance, constrained to max length for that path
+    
+    // function update(){
+    //     var elapsedTime = (Date.now() - animationStartTime) % animationLength;
+    //     animationPosition = elapsedTime / animationLength;
+    //     //current distance travelled
+    //     pathPosition = pathLength * animationPosition;
+    //     requestAnimationFrame(update);
+    //     //set path length
+    //         var tailLines = document.querySelector(".")
+    //loop through lines and set length to:
+    // -constrain(0, line.baseLength, pathPosition)
+    // }
+    // requestAnimationFrame(update);
+
+
+    var lineAnimate = document.createElementNS(svgns, "animate");
+    lineAnimate.setAttributeNS(null, "attributeName","x2");
+    lineAnimate.setAttributeNS(null, "from","0");
+    lineAnimate.setAttributeNS(null, "to", -line.baseLength);
+    var lineAnimationDuration = (animationLength / pathLength) * line.baseLength;
+    lineAnimate.setAttributeNS(null, "dur", lineAnimationDuration/1000);
+    // lineAnimate.setAttributeNS(null, "repeatCount","indefinite"); 
+    // animate.setAttributeNS("http://www.w3.org/1999/xlink", "xlink:href","#ball"); 
+    svgLine.appendChild(lineAnimate);
     
     if(i%2){
         //Every second line inverse end cap and shadow line
         //Shadow line
         var lineShadow = document.createElementNS(svgns, 'line');
-        lineShadow.setAttributeNS(null, 'x1', line.baseLength - line.shadowLength);
+        lineShadow.setAttributeNS(null, 'x1', (-line.baseLength + line.shadowLength));
         lineShadow.setAttributeNS(null, 'y1', line.y);
-        lineShadow.setAttributeNS(null, 'x2', line.baseLength);
+        lineShadow.setAttributeNS(null, 'x2', -line.baseLength);
         lineShadow.setAttributeNS(null, 'y2', line.y);
         lineShadow.setAttributeNS(null, 'style', 'stroke: #000000; stroke-width:'+(segmentHeight+1));
         lineShadow.setAttributeNS(null, 'opacity', '0.3');
@@ -134,16 +216,17 @@ swish.appendChild(trailSVG);
 // var trailsCollection = trailSVG.getElementsByTagName('g');
 // console.log(trailsCollection[0]);
 
-//animate
-var angle = 0;
-function update(){
-    // for(var i = 0; i < trailsCollection.length; i++){
-    //     var line = trailsCollection[i];
-    //     line.setAttributeNS(null, 'stroke-dashoffset', angle);
-    // }
+// for(var i = 0; i < trailsCollection.length; i++){
+//     var line = trailsCollection[i];
+//     line.setAttributeNS(null, 'stroke-dashoffset', angle);
+// }
 
-    angle += 1;
-    swish.setAttributeNS(null, 'transform', 'translate(200, 180) rotate(210)');
+
+//animate
+function update(){
+    var elapsedTime = (Date.now() - animationStartTime) % animationLength;
+    animationPosition = elapsedTime / animationLength;
+    pathPosition = pathLength * animationPosition;
     requestAnimationFrame(update);
 }
 requestAnimationFrame(update);
