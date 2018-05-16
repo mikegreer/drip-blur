@@ -1,3 +1,9 @@
+//on click, generate new trails and set trail svgs to new lengths
+//generate random path and start animation
+//fix issue with short trails snapping back to circle last
+//next trails in contrasting colours
+//calculate curved trails and work out a way to animate
+
 //helpers
 function constrain(min, max, number){
     return Math.min(Math.max(parseInt(number), min), max);
@@ -8,7 +14,7 @@ function constrain(min, max, number){
 var trail = {
     divisionCount: 7,
     divisions: [],
-    stretch: 10,
+    stretch: 6,
     svgs: []
 };
 var radius = 50;
@@ -19,7 +25,7 @@ var animationPosition = 0;
 var pathPosition = 0;
 
 var pathLength = 700;
-var animationLength = 700;
+var animationLength = 1400;
 var animationStartTime = Date.now();
 
 
@@ -139,9 +145,17 @@ for(var i = 0; i < trail.divisions.length; i++){
 
     var lineAnimate = document.createElementNS(svgns, "animate");
     //start offset relative to length, creates stretching effect as if line is anchored to point behind
-    var startOffset = (longestLine - line.baseLength) / 1000;
+    var startOffsetDistance = (longestLine - line.baseLength) / 1000;
+    //difference in distance
+    // var distanceTravelled = pathLength
+    var speed = pathLength / animationLength
+    var startOffsetTime = startOffsetDistance/speed;
+    // t= d/s
+
+    // var startOffset = startOffsetDistance / 
+
     //how long should the line animated for (to counter movement of circle)
-    var lineAnimationDuration = (animationLength / pathLength) * line.baseLength - startOffset;
+    var lineAnimationDuration = (animationLength / pathLength) * line.baseLength - startOffsetTime;
     
     //line animation duration as a %
     var durationAsValue = lineAnimationDuration / animationLength;
@@ -150,10 +164,10 @@ for(var i = 0; i < trail.divisions.length; i++){
     lineAnimate.setAttributeNS(null, "attributeName","x2");
     lineAnimate.setAttributeNS(null, "values", "0; " + -line.baseLength + "; " + -line.baseLength + "; 0");
     lineAnimate.setAttributeNS(null, "keyTimes", "0; " + durationAsValue + "; 0.6; 1");
-    lineAnimate.setAttributeNS(null, "dur", animationLength / 1000);
+    lineAnimate.setAttributeNS(null, "dur", (animationLength / 1000) - startOffsetTime);
     lineAnimate.setAttributeNS(null, "from","0");
     lineAnimate.setAttributeNS(null, "to", -line.baseLength);
-    lineAnimate.setAttributeNS(null, "begin", "circleAnimation.begin+"+startOffset);
+    lineAnimate.setAttributeNS(null, "begin", "circleAnimation.begin+"+startOffsetTime);
     lineAnimate.setAttributeNS(null, "fill","freeze");
     
     svgLine.appendChild(lineAnimate);
@@ -162,10 +176,8 @@ for(var i = 0; i < trail.divisions.length; i++){
         //Every second line inverse end cap and shadow line
         //Shadow line
         var lineShadow = document.createElementNS(svgns, 'line');
-        //-line.baseLength + line.shadowLength
         lineShadow.setAttributeNS(null, 'x1', "0");
         lineShadow.setAttributeNS(null, 'y1', line.y);
-        //-line.baseLength
         lineShadow.setAttributeNS(null, 'x2', "0");
         lineShadow.setAttributeNS(null, 'y2', line.y);
         lineShadow.setAttributeNS(null, 'style', 'stroke: #000000; stroke-width:'+(segmentHeight+1));
@@ -178,8 +190,8 @@ for(var i = 0; i < trail.divisions.length; i++){
         // lineShadowAnimate.setAttributeNS(null, "to", -line.baseLength + 100);
         lineShadowAnimate.setAttributeNS(null, "values", "0; " + -line.baseLength + "; " + -line.baseLength + "; 0");
         lineShadowAnimate.setAttributeNS(null, "keyTimes", "0; " + durationAsValue + "; 0.6; 1");
-        lineShadowAnimate.setAttributeNS(null, "dur", animationLength / 1000);
-        lineShadowAnimate.setAttributeNS(null, "begin", "circleAnimation.begin+"+startOffset);
+        lineShadowAnimate.setAttributeNS(null, "dur", (animationLength / 1000) - startOffsetTime);
+        lineShadowAnimate.setAttributeNS(null, "begin", "circleAnimation.begin+"+startOffsetTime);
         lineShadowAnimate.setAttributeNS(null, "fill","freeze");
         lineShadow.appendChild(lineShadowAnimate);
 
@@ -188,8 +200,8 @@ for(var i = 0; i < trail.divisions.length; i++){
         lineShadowAnimate2.setAttributeNS(null, "attributeName","x1");
         lineShadowAnimate2.setAttributeNS(null, "values", "-10; " + shadowX1 + "; " + shadowX1 + "; -10");
         lineShadowAnimate2.setAttributeNS(null, "keyTimes", "0; " + durationAsValue + "; 0.6; 1");
-        lineShadowAnimate2.setAttributeNS(null, "dur", animationLength / 1000);
-        lineShadowAnimate2.setAttributeNS(null, "begin", "circleAnimation.begin+"+startOffset);
+        lineShadowAnimate2.setAttributeNS(null, "dur", (animationLength / 1000) - startOffsetTime);
+        lineShadowAnimate2.setAttributeNS(null, "begin", "circleAnimation.begin+"+startOffsetTime);
         lineShadow.appendChild(lineShadowAnimate2);
 
         lineContainer.appendChild(lineShadow);
